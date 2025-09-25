@@ -1,6 +1,9 @@
-'use client';
-import React, { useState, ChangeEvent, FormEvent } from 'react';
-import Link from 'next/link';
+"use client";
+import React, { useState, ChangeEvent, FormEvent } from "react";
+import Link from "next/link";
+import { useLogin } from "@/hooks/useAuth";
+import { toast } from "react-toastify";
+import { EyeIcon, EyeOff } from "lucide-react";
 
 interface LoginFormData {
   email: string;
@@ -14,42 +17,58 @@ interface LoginFormErrors {
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   const [errors, setErrors] = useState<LoginFormErrors>({});
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Handle input change
+  const loginMutation = useLogin();
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // Simple validation
   const validate = (): LoginFormErrors => {
     const newErrors: LoginFormErrors = {};
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = "Email is invalid";
     }
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = "Password must be at least 6 characters";
     }
     return newErrors;
   };
 
-  // Handle form submit
   const handleSubmit = (e: FormEvent<HTMLButtonElement>) => {
     e.preventDefault();
     const validationErrors = validate();
     setErrors(validationErrors);
+
     if (Object.keys(validationErrors).length === 0) {
-      console.log('Login Data:', formData);
-      // Send formData to backend API here
+      loginMutation.mutate(formData, {
+        onSuccess: () => {
+          toast.success("Login successful!");
+        },
+        onError: (error: any) => {
+          const status = error?.response?.status;
+          const message = error?.response?.data?.message;
+
+          if (status === 401) {
+            toast.error("Invalid credentials, please try again.");
+          } else if (status === 500) {
+            toast.error("Server error, please try later.");
+          } else {
+            toast.error(message || "Something went wrong!");
+          }
+        },
+      });
     }
   };
 
@@ -67,31 +86,54 @@ const Login: React.FC = () => {
             onChange={handleChange}
             className="border-2 border-gray-300 rounded-md p-2 outline-none"
           />
-          {errors.email && <span className="text-red-500 text-sm">{errors.email}</span>}
+          {errors.email && (
+            <span className="text-red-500 text-sm">{errors.email}</span>
+          )}
         </div>
 
-        <div className="flex flex-col gap-2 mt-4">
+        <div className="flex flex-col gap-2 mt-4 relative">
           <label className="primaryFont">Password</label>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             name="password"
             value={formData.password}
             onChange={handleChange}
-            className="border-2 border-gray-300 rounded-md p-2 outline-none"
+            className="border-2 border-gray-300 rounded-md p-2 pr-10 outline-none"
           />
-          {errors.password && <span className="text-red-500 text-sm">{errors.password}</span>}
+          <button
+            type="button"
+            className="absolute right-3 top-10 text-gray-500"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <EyeIcon size={20} /> : <EyeOff size={20} />}
+          </button>
+          {errors.password && (
+            <span className="text-red-500 text-sm">{errors.password}</span>
+          )}
         </div>
 
         <button
           onClick={handleSubmit}
-          className="bg-purple-500 text-white py-2 mt-6 rounded-md primaryFont hover:bg-purple-600 transition duration-300"
+          className={`bg-purple-500 text-white py-2 mt-6 rounded-md primaryFont hover:bg-purple-600 transition duration-300 ${
+            loginMutation.isPending ? "opacity-70 cursor-not-allowed" : ""
+          }`}
+          disabled={loginMutation.isPending}
         >
-          Login
+          {loginMutation.isPending ? "Logging in..." : "Login"}
         </button>
 
+        {loginMutation.isError && (
+          <p className="text-red-500 text-center mt-2">
+            {(loginMutation.error as Error).message || "Login failed"}
+          </p>
+        )}
+
         <span className="text-sm mt-4 text-center primaryFont">
-          Don't have an account?{' '}
-          <Link href="/signup" className="text-purple-500 hover:underline secondaryFont">
+          Don't have an account?{" "}
+          <Link
+            href="/signup"
+            className="text-purple-500 hover:underline secondaryFont"
+          >
             Sign Up
           </Link>
         </span>

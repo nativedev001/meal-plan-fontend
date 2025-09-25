@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AuthProvider } from "./context/AuthContext";
-
+import { AuthProvider } from "../context/AuthContext";
+import ReactQueryProvider from "@/providors/ReactQueryProvider";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const metadata: Metadata = {
   title: "Meal Planner",
@@ -18,9 +20,13 @@ export default function RootLayout({
       <body
         className={`antialiased`}
       >
-        <AuthProvider>
-        {children}
-        </AuthProvider>
+        <ReactQueryProvider>
+          <AuthProvider>
+
+            {children}
+            <ToastContainer position="top-right" autoClose={3000} />
+          </AuthProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );
