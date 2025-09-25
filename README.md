@@ -30,6 +30,9 @@ Check your Node.js version with:
 node -v
 
 Install dependencies:
+Install dependencies:
+
+```bash
 npm install
 # or
 yarn
@@ -38,11 +41,7 @@ pnpm install
 
 ▶️ Running the Development Server
 npm run dev
-# or
+ or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 Then open http://localhost:3000 in your browser.
 
