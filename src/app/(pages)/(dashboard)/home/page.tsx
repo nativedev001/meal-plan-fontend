@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useUpdateUser, useGetUser } from "@/hooks/useUpdate";
 import { useDietPlan } from "@/hooks/useDietPlan";
 
-const diets = ["vegetarian", "gluten-free", "vegan", "keto", "pescatarian"];
+const diets = ["vegetarian", "gluten-free"];
 
 const Home = () => {
   const { data: user } = useGetUser();
