@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useUpdateUser, useGetUser } from "@/hooks/useUpdate";
 import { useDietPlan } from "@/hooks/useDietPlan";
 
+// Example dietary options
 const diets = ["vegetarian", "gluten-free"];
 
 const Home = () => {
